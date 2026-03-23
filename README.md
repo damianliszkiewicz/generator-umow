@@ -1,36 +1,110 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Generator umowy kupna-sprzedazy samochodu
 
-## Getting Started
+MVP web application for generating Polish car sale agreements.
 
-First, run the development server:
+## Stack
+- Next.js (App Router)
+- TypeScript
+- Tailwind CSS
+- shadcn/ui-style primitives
+- Convex (database + backend functions)
+- Clerk (authentication)
+- React Hook Form
+- Zod
+- @react-pdf/renderer
 
+## Core scope
+- Poland only
+- private seller to private buyer
+- one vehicle per contract
+- Polish UI copy only
+- saved drafts
+- contract preview
+- PDF generation
+- contract history dashboard
+
+## Not in MVP
+- companies, co-owners, multiple vehicles
+- DOCX export
+- e-signature
+- OCR
+- external registry integrations
+- organizations / multi-tenant
+
+## Setup
+
+### 1. Install dependencies
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Configure environment
+Copy values from [.env.example](.env.example) into `.env.local`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Required variables:
+- `NEXT_PUBLIC_CONVEX_URL`
+- `CONVEX_DEPLOYMENT`
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+- `CLERK_SECRET_KEY`
+- `CLERK_JWT_ISSUER_DOMAIN`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Configure Clerk JWT template for Convex
+In Clerk dashboard create JWT template named `convex`.
+Convex uses this token template via `getToken({ template: "convex" })`.
 
-## Learn More
+### 4. Run Convex dev watcher
+```bash
+npx convex dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+### 5. Run Next.js app
+```bash
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+App starts at `http://localhost:3000`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Routes
+- `/` landing page
+- `/sign-in` sign in
+- `/sign-up` sign up
+- `/dashboard` protected contract dashboard
+- `/umowy/nowa` first wizard step (seller) and contract creation
+- `/umowy/[id]/edytuj?step=...` remaining wizard steps
+- `/umowy/[id]/podglad` preview
+- `/api/umowy/[id]/pdf` server-side PDF download
 
-## Deploy on Vercel
+## Data and auth architecture
+- Clerk handles session and UI auth.
+- Convex handles persistence, ownership checks, and contract CRUD.
+- Contract ownership is always derived from `ctx.auth.getUserIdentity()` and `identity.tokenIdentifier`.
+- Preview and PDF use one shared view-model mapper to keep content ordering and wording aligned.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Validation rules
+- VIN must be exactly 17 characters.
+- Price must be positive.
+- Required fields are validated with Polish messages.
+- PESEL, NIP, and REGON use checksum validators.
+- Price in words is generated via `slownie` wrapper.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Tests
+Run:
+
+```bash
+npm run test
+```
+
+Covered critical paths:
+- checksum validators (PESEL/NIP/REGON)
+- schema-level validation (VIN/price/required fields)
+- section merge safety helper
+- price words helper behavior
+
+## Lint
+```bash
+npm run lint
+```
+
+## Deployment notes
+- PDF generation uses `@react-pdf/renderer` in a Node.js route handler (`/api/umowy/[id]/pdf`) to avoid heavy Chromium dependencies.
+- If strict HTML-to-PDF parity is required later, consider a dedicated PDF service while keeping the shared view-model layer unchanged.
