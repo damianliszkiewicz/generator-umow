@@ -52,14 +52,18 @@ Required variables:
 In Clerk dashboard create JWT template named `convex`.
 Convex uses this token template via `getToken({ template: "convex" })`.
 
-### 4. Run Convex dev watcher
+### 4. Run frontend and Convex together
 ```bash
-npx convex dev
+npm run dev:all
 ```
 
-### 5. Run Next.js app
+This command prefixes terminal output with `frontend` and `convex`, so it is clear which process is producing each log line.
+
+If you want to run them separately instead:
+
 ```bash
-npm run dev
+npm run dev:frontend
+npm run dev:convex
 ```
 
 App starts at `http://localhost:3000`.

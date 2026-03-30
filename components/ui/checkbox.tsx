@@ -13,7 +13,10 @@ export function Checkbox({ id, checked, onCheckedChange, className, disabled }: 
     <input
       id={id}
       type="checkbox"
-      className={cn("h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-400", className)}
+      className={cn(
+        "h-4 w-4 rounded-md border-[color:var(--dashboard-border)] text-[color:var(--dashboard-accent)] focus:ring-[color:var(--dashboard-accent-subtle)]",
+        className,
+      )}
       checked={checked}
       onChange={(event) => onCheckedChange(event.target.checked)}
       disabled={disabled}

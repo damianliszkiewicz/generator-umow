@@ -3,6 +3,18 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --dashboard-page: #f7f3ee;
+  --dashboard-panel: rgba(255, 255, 255, 0.94);
+  --dashboard-border: #ece3d7;
+  --dashboard-text: #26221b;
+  --dashboard-muted: #7e776c;
+  --dashboard-accent: #7c5cff;
+  --dashboard-accent-soft: #f1ecff;
+  --dashboard-accent-subtle: #c9bbff;
+  --dashboard-success: #16a34a;
+  --dashboard-success-soft: #ecfdf3;
+  --dashboard-danger: #dc2626;
+  --dashboard-danger-soft: #fff1f1;
 }
 
 @theme inline {

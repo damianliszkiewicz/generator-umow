@@ -1,11 +1,11 @@
 export const runtime = "nodejs";
 
 import { auth } from "@clerk/nextjs/server";
-import { renderToStream } from "@react-pdf/renderer";
+import puppeteer from "puppeteer-core";
 import { ConvexHttpClient } from "convex/browser";
-import type { Readable } from "node:stream";
+import { existsSync } from "node:fs";
 
-import { AgreementPdfDocument } from "@/components/contracts/agreement-pdf-document";
+import { buildAgreementPdfHtmlDocument } from "@/components/contracts/agreement-pdf-html-document";
 import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
 import { mapContractToViewModel } from "@/lib/contracts/view-model";
@@ -35,30 +35,70 @@ export async function GET(
   });
 
   const viewModel = mapContractToViewModel(contract as Doc<"contracts">);
-  const stream = await renderToStream(AgreementPdfDocument({ viewModel }));
-  const buffer = await streamToBuffer(stream as Readable);
+  const generatedAtDisplay = new Intl.DateTimeFormat("pl-PL", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date());
+  const html = buildAgreementPdfHtmlDocument(viewModel, {
+    generatedAtDisplay,
+    documentLabel: "Umowa kupna-sprzedaży pojazdu",
+    pageIndicator: "Strona 1 / 1",
+    documentBadge: "Oryginał",
+  });
+  const pdf = await renderHtmlToPdf(html);
 
-  return new Response(new Uint8Array(buffer), {
+  return new Response(new Uint8Array(pdf), {
     status: 200,
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="umowa-${id}.pdf"`,
+      "Content-Disposition": `attachment; filename="${id}.pdf"`,
+      "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+      Pragma: "no-cache",
+      Expires: "0",
     },
   });
 }
 
-function streamToBuffer(stream: Readable): Promise<Buffer> {
-  return new Promise((resolve, reject) => {
-    const chunks: Uint8Array[] = [];
-
-    stream.on("data", (chunk) => {
-      chunks.push(chunk);
-    });
-
-    stream.on("end", () => {
-      resolve(Buffer.concat(chunks.map((chunk) => Buffer.from(chunk))));
-    });
-
-    stream.on("error", reject);
+async function renderHtmlToPdf(html: string) {
+  const browser = await puppeteer.launch({
+    executablePath: resolveBrowserExecutablePath(),
+    headless: true,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
+
+  try {
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: "networkidle0" });
+
+    return await page.pdf({
+      format: "A4",
+      printBackground: true,
+      scale: 0.96,
+      margin: {
+        top: "0",
+        right: "0",
+        bottom: "0",
+        left: "0",
+      },
+      preferCSSPageSize: true,
+    });
+  } finally {
+    await browser.close();
+  }
+}
+
+function resolveBrowserExecutablePath() {
+  const candidates = [
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
+  ];
+
+  const browserPath = candidates.find((candidate) => existsSync(candidate));
+
+  if (!browserPath) {
+    throw new Error("Nie znaleziono lokalnej przeglądarki Chrome lub Edge do renderowania PDF.");
+  }
+
+  return browserPath;
 }
