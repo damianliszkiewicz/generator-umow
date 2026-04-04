@@ -1,5 +1,3 @@
-import path from "node:path";
-
 import { Document, Font, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 
 import type { AgreementViewModel } from "@/lib/contracts/view-model";
@@ -10,17 +8,11 @@ Font.register({
   family: PDF_FONT_FAMILY,
   fonts: [
     {
-      src: path.join(
-        process.cwd(),
-        "node_modules/@expo-google-fonts/source-serif-4/400Regular/SourceSerif4_400Regular.ttf",
-      ),
+      src: "/fonts/SourceSerif4_400Regular.ttf",
       fontWeight: 400,
     },
     {
-      src: path.join(
-        process.cwd(),
-        "node_modules/@expo-google-fonts/source-serif-4/700Bold/SourceSerif4_700Bold.ttf",
-      ),
+      src: "/fonts/SourceSerif4_700Bold.ttf",
       fontWeight: 700,
     },
   ],

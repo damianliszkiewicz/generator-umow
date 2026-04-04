@@ -52,11 +52,7 @@ export function NewContractForm() {
 
   return (
     <Card className="overflow-hidden p-0">
-      <header className="border-b border-[color:var(--dashboard-border)] bg-white/70 p-6 lg:p-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dashboard-muted)]">Nowy szkic</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-[-0.03em] text-[color:var(--dashboard-text)]">Nowa umowa kupna-sprzedaży</h1>
-        <p className="mt-2 text-sm leading-6 text-[color:var(--dashboard-muted)]">Wypełnij formularz danymi sprzedającego pojazdu. Styl i układ formularza są spójne z dashboardem oraz podglądem.</p>
-      </header>
+      <FormHeader />
 
       <form className="flex flex-col" onSubmit={handleSubmit(onSubmit)}>
         <div className="divide-y divide-[color:var(--dashboard-border)]">
@@ -122,25 +118,46 @@ export function NewContractForm() {
           </FormSection>
         </div>
 
-        <div className="sticky bottom-0 z-10 mt-auto flex flex-col items-center justify-between gap-4 rounded-b-[24px] border-t border-[color:var(--dashboard-border)] bg-white/92 p-4 backdrop-blur sm:flex-row-reverse lg:p-6">
-          <div className="flex w-full gap-3 sm:w-auto">
-            <Link
-              className="inline-flex h-10 flex-1 items-center justify-center rounded-xl border border-[color:var(--dashboard-border)] bg-white px-6 text-sm font-semibold text-[color:var(--dashboard-text)] transition-colors hover:bg-[color:var(--dashboard-accent-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--dashboard-accent-subtle)] sm:flex-none"
-              href="/dashboard"
-            >
-              Anuluj
-            </Link>
-            <Button className="flex-1 px-8 sm:flex-none" type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Zapisywanie..." : "Zapisz i kontynuuj"}
-            </Button>
-          </div>
-          <div className="hidden items-center gap-2 text-[color:var(--dashboard-muted)] sm:flex">
-            <ShieldCheck className="h-4 w-4" />
-            <span className="text-xs font-semibold">Bezpieczne połączenie</span>
-          </div>
-        </div>
+        <FormActionBar isSubmitting={isSubmitting} />
       </form>
     </Card>
+  );
+}
+
+function FormHeader() {
+  return (
+    <header className="border-b border-[color:var(--dashboard-border)] bg-white/70 p-6 lg:p-8">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dashboard-muted)]">Nowy szkic</p>
+      <h1 className="mt-2 text-3xl font-semibold tracking-[-0.03em] text-[color:var(--dashboard-text)]">
+        Nowa umowa kupna-sprzedaży
+      </h1>
+      <p className="mt-2 text-sm leading-6 text-[color:var(--dashboard-muted)]">
+        Wypełnij formularz danymi sprzedającego pojazdu. Styl i układ formularza są spójne z
+        dashboardem oraz podglądem.
+      </p>
+    </header>
+  );
+}
+
+function FormActionBar({ isSubmitting }: { isSubmitting: boolean }) {
+  return (
+    <div className="sticky bottom-0 z-10 mt-auto flex flex-col items-center justify-between gap-4 rounded-b-[24px] border-t border-[color:var(--dashboard-border)] bg-white/92 p-4 backdrop-blur sm:flex-row-reverse lg:p-6">
+      <div className="flex w-full gap-3 sm:w-auto">
+        <Link
+          className="inline-flex h-10 flex-1 items-center justify-center rounded-xl border border-[color:var(--dashboard-border)] bg-white px-6 text-sm font-semibold text-[color:var(--dashboard-text)] transition-colors hover:bg-[color:var(--dashboard-accent-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--dashboard-accent-subtle)] sm:flex-none"
+          href="/dashboard"
+        >
+          Powrót do dashboardu
+        </Link>
+        <Button className="flex-1 px-8 sm:flex-none" type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Zapisywanie..." : "Zapisz i kontynuuj"}
+        </Button>
+      </div>
+      <div className="hidden items-center gap-2 text-[color:var(--dashboard-muted)] sm:flex">
+        <ShieldCheck className="h-4 w-4" />
+        <span className="text-xs font-semibold">Bezpieczne połączenie</span>
+      </div>
+    </div>
   );
 }
 

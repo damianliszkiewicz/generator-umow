@@ -6,6 +6,7 @@ import Link from "next/link";
 
 import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
+import { AgreementPdfDocument } from "@/components/contracts/agreement-pdf-document";
 import { AgreementPreview } from "@/components/contracts/agreement-preview";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -35,19 +36,14 @@ export function PreviewClient({ contractId }: { contractId: string }) {
   }, []);
 
   async function handlePdfDownload() {
+    if (!contract) return;
     setIsDownloadingPdf(true);
     setDownloadError(null);
 
     try {
-      const response = await fetch(`/api/umowy/${contractId}/pdf`, {
-        method: "GET",
-      });
-
-      if (!response.ok) {
-        throw new Error("Nie udało się wygenerować dokumentu PDF.");
-      }
-
-      const blob = await response.blob();
+      const { pdf } = await import("@react-pdf/renderer");
+      const viewModelForPdf = mapContractToViewModel(contract as Doc<"contracts">);
+      const blob = await pdf(<AgreementPdfDocument viewModel={viewModelForPdf} />).toBlob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
 
@@ -93,6 +89,9 @@ export function PreviewClient({ contractId }: { contractId: string }) {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <Link href="/dashboard">
+              <Button variant="secondary">← Moje umowy</Button>
+            </Link>
             <Link href={`/umowy/${contractId}/edytuj?step=oswiadczenia`}>
               <Button variant="secondary">Wróć do edycji</Button>
             </Link>

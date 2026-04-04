@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import type { WizardStep } from "@/lib/contracts/schemas";
 import { wizardStepLabels, wizardStepOrder } from "@/lib/contracts/schemas";
 
@@ -81,6 +83,12 @@ export function ContractStepProgress({ currentStep, note }: ContractStepProgress
         <div className="h-2 w-full rounded-full bg-[color:var(--dashboard-accent-soft)]">
           <div className="h-2 rounded-full bg-[color:var(--dashboard-accent)]" style={{ width: progressWidth }} />
         </div>
+        <Link
+          href="/dashboard"
+          className="mt-3 inline-block text-xs font-medium text-[color:var(--dashboard-muted)] transition-colors hover:text-[color:var(--dashboard-text)]"
+        >
+          ← Moje umowy
+        </Link>
       </div>
     </>
   );
