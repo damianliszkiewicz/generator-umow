@@ -112,3 +112,21 @@ npm run lint
 ## Deployment notes
 - PDF generation uses `@react-pdf/renderer` in a Node.js route handler (`/api/umowy/[id]/pdf`) to avoid heavy Chromium dependencies.
 - If strict HTML-to-PDF parity is required later, consider a dedicated PDF service while keeping the shared view-model layer unchanged.
+
+## Vercel deployment
+- Frontend is configured to run on Vercel.
+- The current Vercel project name is `generator-umow`.
+- Required Vercel environment variables match `.env.example`:
+  - `NEXT_PUBLIC_CONVEX_URL`
+  - `CONVEX_DEPLOYMENT`
+  - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+  - `CLERK_SECRET_KEY`
+  - `CLERK_JWT_ISSUER_DOMAIN`
+- If the repository stays private under a GitHub organization, automatic Git integration may be blocked on the Hobby plan. In that case use manual deploys from the project root:
+
+```bash
+npx vercel deploy
+npx vercel deploy --prod
+```
+
+- After adding a new Vercel domain, also add it in Clerk allowed origins / redirect URLs.
