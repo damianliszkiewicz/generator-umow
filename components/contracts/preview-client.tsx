@@ -1,66 +1,34 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { useConvexAuth, useQuery } from "convex/react";
-import Link from "next/link";
 
 import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
-import { AgreementPdfDocument } from "@/components/contracts/agreement-pdf-document";
+import { AgreementPdfDownloadButton } from "@/components/contracts/agreement-pdf-download-button";
 import { AgreementPreview } from "@/components/contracts/agreement-preview";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { LinkButton } from "@/components/ui/link-button";
 import { mapContractToViewModel } from "@/lib/contracts/view-model";
 
 export function PreviewClient({ contractId }: { contractId: string }) {
-  const [hasMounted, setHasMounted] = useState(false);
   const { isLoading, isAuthenticated } = useConvexAuth();
-  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
-  const [downloadError, setDownloadError] = useState<string | null>(null);
-  const [generatedAtDisplay, setGeneratedAtDisplay] = useState("");
   const typedContractId = contractId as Id<"contracts">;
-  const contract = useQuery(
-    api.contracts.getById,
-    hasMounted && isAuthenticated ? { contractId: typedContractId } : "skip",
-  );
-
-  useEffect(() => {
-    setHasMounted(true);
-    setGeneratedAtDisplay(
+  const generatedAtDisplay = useMemo(
+    () =>
       new Intl.DateTimeFormat("pl-PL", {
         day: "numeric",
         month: "long",
         year: "numeric",
       }).format(new Date()),
-    );
-  }, []);
+    [],
+  );
+  const contract = useQuery(
+    api.contracts.getById,
+    isAuthenticated ? { contractId: typedContractId } : "skip",
+  );
 
-  async function handlePdfDownload() {
-    if (!contract) return;
-    setIsDownloadingPdf(true);
-    setDownloadError(null);
-
-    try {
-      const { pdf } = await import("@react-pdf/renderer");
-      const viewModelForPdf = mapContractToViewModel(contract as Doc<"contracts">);
-      const blob = await pdf(<AgreementPdfDocument viewModel={viewModelForPdf} />).toBlob();
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-
-      link.href = url;
-      link.download = `${contractId}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(url);
-    } catch {
-      setDownloadError("Nie udało się wygenerować dokumentu do druku. Spróbuj ponownie.");
-    } finally {
-      setIsDownloadingPdf(false);
-    }
-  }
-
-  if (!hasMounted || isLoading) {
+  if (isLoading) {
     return <p className="text-sm text-[color:var(--dashboard-muted)]">Ładowanie sesji...</p>;
   }
 
@@ -89,22 +57,25 @@ export function PreviewClient({ contractId }: { contractId: string }) {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Link href="/dashboard">
-              <Button variant="secondary">← Moje umowy</Button>
-            </Link>
-            <Link href={`/umowy/${contractId}/edytuj?step=oswiadczenia`}>
-              <Button variant="secondary">Wróć do edycji</Button>
-            </Link>
-            <Button onClick={handlePdfDownload} disabled={isDownloadingPdf}>
-              {isDownloadingPdf ? "Generuję dokument do druku..." : "Pobierz PDF"}
-            </Button>
+            <LinkButton href="/dashboard" variant="secondary">
+              ← Moje umowy
+            </LinkButton>
+            <LinkButton href={`/umowy/${contractId}/edytuj?step=oswiadczenia`} variant="secondary">
+              Wróć do edycji
+            </LinkButton>
+            <AgreementPdfDownloadButton
+              fileName={`${contractId}.pdf`}
+              idleLabel="Pobierz PDF"
+              loadingLabel="Generuję dokument do druku..."
+              viewModel={viewModel}
+              wrapperClassName="max-w-[15rem]"
+            />
           </div>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
           <span className="rounded-full bg-[color:var(--dashboard-accent-soft)] px-3 py-1 text-xs font-semibold text-[color:var(--dashboard-accent)]">PDF</span>
           <span className="rounded-full border border-[color:var(--dashboard-border)] bg-white px-3 py-1 text-xs font-semibold text-[color:var(--dashboard-muted)]">Wygenerowano: {generatedAtDisplay}</span>
         </div>
-        {downloadError ? <p className="mt-3 text-sm text-[color:var(--dashboard-danger)]">{downloadError}</p> : null}
       </Card>
 
       <AgreementPreview
